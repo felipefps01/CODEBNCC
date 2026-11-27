@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme, useHistory, makeThumb } from './lib.js';
+import Logo from './Logo.jsx';
 
 function Icon({ name }) {
   const paths = {
@@ -191,7 +192,7 @@ export default function App() {
       <header className="md3-topbar">
         <div className="md3-topbar__inner">
           <div className="md3-topbar__title">
-            <span className="md3-topbar__logo">CB</span>
+            <Logo size={40} />
             <div>
               <h1>CODEBNCC</h1>
               <p>Códigos BNCC EI02 por IA</p>
