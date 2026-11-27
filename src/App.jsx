@@ -42,14 +42,16 @@ function paletteFor(code) {
 function CodeCard({ item }) {
   const [from, to] = paletteFor(item.code);
   return (
-    <li
-      className="code-banner"
-      style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
-    >
-      <span className="code-banner__field">{item.field}</span>
-      <span className="code-banner__code">{item.code}</span>
-      <p className="code-banner__desc">{item.description}</p>
-      {item.justification && <p className="code-banner__just">{item.justification}</p>}
+    <li className="md3-card code-card">
+      <span className="code-card__field">{item.field}</span>
+      <span
+        className="code-banner"
+        style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
+      >
+        {item.code}
+      </span>
+      <p className="code-card__desc">{item.description}</p>
+      {item.justification && <p className="code-card__just">{item.justification}</p>}
     </li>
   );
 }
