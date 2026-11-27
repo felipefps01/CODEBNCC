@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const HISTORY_KEY = 'codebncc:history:local';
 const THEME_KEY = 'codebncc:theme';
@@ -37,74 +37,57 @@ export function useTheme() {
 
 export function useHistory() {
   const [history, setHistory] = useState([]);
-  const modeRef = useRef('server');
 
-  useEffect(() => {
-    let active = true;
-    fetch('/api/history')
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error('http ' + r.status))))
-      .then(data => {
-        if (active) setHistory(Array.isArray(data.items) ? data.items : []);
-      })
-      .catch(() => {
-        if (active) {
-          modeRef.current = 'local';
-          setHistory(loadLocal());
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  function addLocal(entry) {
-    const local = { ...entry, id: `${Date.now()}` };
-    setHistory(prev => {
-      const next = [local, ...prev];
-      saveLocal(next);
-      return next;
-    });
+  async function refresh() {
+    try {
+      const r = await fetch('/api/history');
+      if (!r.ok) throw new Error('http ' + r.status);
+      const data = await r.json();
+      setHistory(Array.isArray(data.items) ? data.items : []);
+      return true;
+    } catch {
+      setHistory(loadLocal());
+      return false;
+    }
   }
 
+  useEffect(() => {
+    refresh();
+  }, []);
+
   function addEntry(entry) {
-    if (modeRef.current === 'server') {
-      fetch('/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
+    fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    })
+      .then(r => {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
       })
-        .then(r => (r.ok ? r.json() : Promise.reject(new Error('http ' + r.status))))
-        .then(saved => setHistory(prev => [saved, ...prev]))
-        .catch(() => {
-          modeRef.current = 'local';
-          addLocal(entry);
+      .then(saved => setHistory(prev => [saved, ...prev]))
+      .catch(() => {
+        const local = { ...entry, id: `${Date.now()}` };
+        setHistory(prev => {
+          const next = [local, ...prev];
+          saveLocal(next);
+          return next;
         });
-      return;
-    }
-    addLocal(entry);
+      });
   }
 
   function removeEntry(id) {
-    setHistory(prev => {
-      const next = prev.filter(item => item.id !== id);
-      if (modeRef.current === 'local') saveLocal(next);
-      return next;
-    });
-    if (modeRef.current === 'server') {
-      fetch(`/api/history?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
-    }
+    setHistory(prev => prev.filter(item => item.id !== id));
+    fetch(`/api/history?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
   }
 
   function clearHistory() {
     setHistory([]);
-    if (modeRef.current === 'local') {
-      saveLocal([]);
-      return;
-    }
+    saveLocal([]);
     fetch('/api/history', { method: 'DELETE' }).catch(() => {});
   }
 
-  return { history, addEntry, removeEntry, clearHistory };
+  return { history, addEntry, removeEntry, clearHistory, refresh };
 }
 
 export function makeThumb(file) {

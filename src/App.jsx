@@ -207,7 +207,7 @@ function HistoryDialog({ open, history, onClose, onRemove, onClear }) {
 
 export default function App() {
   const [dark, toggleTheme] = useTheme();
-  const { history, addEntry, removeEntry, clearHistory } = useHistory();
+  const { history, addEntry, removeEntry, clearHistory, refresh } = useHistory();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
@@ -217,6 +217,13 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!historyOpen) return undefined;
+    refresh();
+    const timer = setInterval(refresh, 4000);
+    return () => clearInterval(timer);
+  }, [historyOpen]);
 
   function pickImage(f) {
     if (!f || !f.type.startsWith('image/')) {
