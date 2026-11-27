@@ -19,23 +19,22 @@ function Icon({ name }) {
   );
 }
 
-const BANNER_ROLES = [
-  { bg: '--md-banner-blue', fg: '--md-banner-on-blue' },
-  { bg: '--md-banner-slate', fg: '--md-banner-on-slate' },
-  { bg: '--md-banner-purple', fg: '--md-banner-on-purple' },
-  { bg: '--md-banner-red', fg: '--md-banner-on-red' },
-  { bg: '--md-banner-teal', fg: '--md-banner-on-teal' },
-  { bg: '--md-banner-brown', fg: '--md-banner-on-brown' }
-];
+const PREFIX_ROLES = {
+  EO: { bg: '--md-banner-blue', fg: '--md-banner-on-blue' },
+  CG: { bg: '--md-banner-red', fg: '--md-banner-on-red' },
+  TS: { bg: '--md-banner-purple', fg: '--md-banner-on-purple' },
+  EF: { bg: '--md-banner-teal', fg: '--md-banner-on-teal' },
+  ET: { bg: '--md-banner-brown', fg: '--md-banner-on-brown' }
+};
 
-function m3RoleFor(code) {
-  let hash = 0;
-  for (const ch of code) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return BANNER_ROLES[hash % BANNER_ROLES.length];
+const DEFAULT_ROLE = { bg: '--md-banner-slate', fg: '--md-banner-on-slate' };
+
+function roleFor(code) {
+  return PREFIX_ROLES[code.slice(4, 6)] || DEFAULT_ROLE;
 }
 
 function CodeCard({ item }) {
-  const role = m3RoleFor(item.code);
+  const role = roleFor(item.code);
   return (
     <li className="md3-card code-card">
       <span
@@ -78,7 +77,7 @@ function HistoryDialog({ open, history, onClose, onRemove, onClear }) {
                         </span>
                         <div className="history-item__chips">
                           {entry.codes.map(c => {
-                            const role = m3RoleFor(c.code);
+                            const role = roleFor(c.code);
                             return (
                               <span
                                 key={c.code}
