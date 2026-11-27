@@ -15,8 +15,10 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React 18 + Vite, CSS com tokens Material Design 3 |
-| Backend | Node.js + Express (a chave de API fica apenas no servidor) |
-| IA | Google Gemini — modelo `gemini-3.1-flash-lite` |
+| Backend | Netlify Functions (`netlify/functions`) em produção; Express para desenvolvimento local |
+| IA | Google Gemini — modelo `gemini-3.1-flash-lite` (lógica compartilhada em `shared/gemini.mjs`) |
+
+A chave de API (`CHAVE_API`) nunca vai para o navegador: fica em variável de ambiente no servidor Express (local) ou nas variáveis de ambiente do site no Netlify (produção).
 
 ## Como rodar
 
@@ -43,7 +45,7 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 
    Acesse http://localhost:5173
 
-4. Em produção:
+4. Em produção (Node/Express):
 
    ```bash
    npm run build
@@ -52,11 +54,29 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 
    O Express serve o build do Vite (`dist/`) e a API na porta `3001` (configurável em `PORT`).
 
+## Deploy no Netlify
+
+O repositório inclui `netlify.toml` e as funções serverless em `netlify/functions/`:
+
+- **Build command**: `npm run build`
+- **Publish directory**: `dist`
+- **Funções**: `netlify/functions/generate.mjs` (rota `/api/generate`) e `netlify/functions/health.mjs` (rota `/api/health`), já mapeadas via `config.path` — sem necessidade de redirects
+
+Passos:
+
+1. Conecte o repositório no Netlify (ou use `netlify deploy --prod`).
+2. Em **Site settings > Environment variables**, cadastre:
+   - `CHAVE_API` = sua chave do [Google AI Studio](https://aistudio.google.com/apikey)
+3. Faça o deploy (ou "Clear cache and deploy site" após cadastrar a variável).
+
+O frontend chamado em `/api/*` é atendido pelas funções serverless — não há backend Express no Netlify.
+
 ## Solução de problemas
 
-- **"Erro de conexão com o servidor" / banner "Backend offline"** — o frontend não alcança `/api`. Em desenvolvimento, rode sempre com `npm run dev` (sobe backend e frontend juntos; o Vite repassa `/api` para o backend). Em produção, use `npm start`, que serve o build e a API na mesma porta.
-- **Porta do backend ocupada** — a porta padrão é `3001`. Se ela já estiver em uso, defina `PORT=outra-porta` no `.env` (o proxy do Vite lê o mesmo valor, então tudo continua funcionando).
-- **Banner "CHAVE_API não configurada"** — o arquivo `.env` não existe ou está sem a chave. Copie `.env.example` para `.env`, preencha `CHAVE_API` e reinicie o backend (o servidor carrega o `.env` automaticamente ao iniciar).
+- **"Backend indisponível em /api" no Netlify** — o deploy não incluiu as funções. Confirme que `netlify.toml` e `netlify/functions/` estão no repositório e refaça o deploy.
+- **Banner "CHAVE_API não configurada" no Netlify** — cadastre a variável de ambiente no painel (Site settings > Environment variables) e refaça o deploy. Localmente, copie `.env.example` para `.env`, preencha `CHAVE_API` e reinicie.
+- **"Erro de conexão" local** — rode sempre com `npm run dev` (backend + web juntos; o Vite repassa `/api` ao backend) ou `npm start` em produção Node, que serve build e API na mesma porta.
+- **Porta do backend ocupada (local)** — defina `PORT=outra-porta` no `.env`; o proxy do Vite usa o mesmo valor.
 - **HTTP 403** — a chave não tem permissão para o modelo `gemini-3.1-flash-lite`; gere uma nova chave no [Google AI Studio](https://aistudio.google.com/apikey).
 - **HTTP 429** — limite de requisições atingido; aguarde e tente novamente.
 

@@ -100,6 +100,10 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false);
   const [backend, setBackend] = useState({ checked: false, ok: false, apiKeyConfigured: false });
   const inputRef = useRef(null);
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const backendHint = isLocal
+    ? 'Execute npm run dev (backend + web) ou npm start após npm run build.'
+    : 'Verifique o deploy no Netlify: a pasta netlify/functions precisa estar publicada e a variável CHAVE_API configurada em Site settings > Environment variables.';
 
   useEffect(() => {
     let active = true;
@@ -169,8 +173,8 @@ export default function App() {
       addEntry({ date: new Date().toISOString(), codes: data.codes, thumb });
     } catch (err) {
       setError(
-        'Não foi possível conectar ao backend (/api). Inicie o servidor com "npm run dev" ' +
-        '(ou "npm start" após "npm run build"). Detalhe: ' +
+        'Não foi possível conectar ao backend (/api). ' +
+        backendHint + ' Detalhe: ' +
         (err?.message || 'erro de rede')
       );
     } finally {
@@ -203,13 +207,14 @@ export default function App() {
       <main className="container">
         {backend.checked && !backend.ok && (
           <div className="md3-banner" role="alert">
-            Backend offline — o frontend não alcança /api. Execute <code>npm run dev</code> (backend :3001 + web :5173)
-            ou <code>npm start</code> para servir tudo na mesma porta.
+            Backend indisponível em /api. {backendHint}
           </div>
         )}
         {backend.checked && backend.ok && !backend.apiKeyConfigured && (
           <div className="md3-banner md3-banner--warn" role="alert">
-            CHAVE_API não configurada no servidor — crie o arquivo .env a partir de .env.example e reinicie o backend.
+            CHAVE_API não configurada — {isLocal
+              ? 'crie o arquivo .env a partir de .env.example e reinicie o backend.'
+              : 'cadastre a variável no painel do Netlify (Site settings > Environment variables) e faça um novo deploy.'}
           </div>
         )}
         <section className="md3-card upload-card">
