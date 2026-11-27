@@ -377,15 +377,6 @@ body {
   box-shadow: 0 6px 18px color-mix(in srgb, #000 25%, transparent);
 }
 
-.code-card__field {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--md-on-surface-variant);
-  margin-top: 0.75rem;
-}
-
 .code-card__desc {
   margin: 0.75rem 0 0.35rem;
   font-size: 0.95rem;

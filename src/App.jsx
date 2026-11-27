@@ -43,7 +43,6 @@ function CodeCard({ item }) {
       >
         {item.code}
       </span>
-      <span className="code-card__field">{item.field}</span>
       <p className="code-card__desc">{item.description}</p>
       {item.justification && <p className="code-card__just">{item.justification}</p>}
     </li>
