@@ -98,27 +98,7 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [backend, setBackend] = useState({ checked: false, ok: false, apiKeyConfigured: false });
   const inputRef = useRef(null);
-  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const backendHint = isLocal
-    ? 'Execute npm run dev (backend + web) ou npm start após npm run build.'
-    : 'Verifique o deploy no Netlify: a pasta netlify/functions precisa estar publicada e a variável CHAVE_API configurada em Site settings > Environment variables.';
-
-  useEffect(() => {
-    let active = true;
-    fetch('/api/health')
-      .then(r => (r.ok ? r.json() : { ok: false }))
-      .then(data => {
-        if (active) setBackend({ checked: true, ok: Boolean(data.ok), apiKeyConfigured: Boolean(data.apiKeyConfigured) });
-      })
-      .catch(() => {
-        if (active) setBackend({ checked: true, ok: false, apiKeyConfigured: false });
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   function pickImage(f) {
     if (!f || !f.type.startsWith('image/')) {
@@ -172,11 +152,7 @@ export default function App() {
       setResult(data);
       addEntry({ date: new Date().toISOString(), codes: data.codes, thumb });
     } catch (err) {
-      setError(
-        'Não foi possível conectar ao backend (/api). ' +
-        backendHint + ' Detalhe: ' +
-        (err?.message || 'erro de rede')
-      );
+      setError('Não foi possível conectar ao servidor. Detalhe: ' + (err?.message || 'erro de rede'));
     } finally {
       setLoading(false);
     }
@@ -205,18 +181,6 @@ export default function App() {
       </header>
 
       <main className="container">
-        {backend.checked && !backend.ok && (
-          <div className="md3-banner" role="alert">
-            Backend indisponível em /api. {backendHint}
-          </div>
-        )}
-        {backend.checked && backend.ok && !backend.apiKeyConfigured && (
-          <div className="md3-banner md3-banner--warn" role="alert">
-            CHAVE_API não configurada — {isLocal
-              ? 'crie o arquivo .env a partir de .env.example e reinicie o backend.'
-              : 'cadastre a variável no painel do Netlify (Site settings > Environment variables) e faça um novo deploy.'}
-          </div>
-        )}
         <section className="md3-card upload-card">
           <div
             className={`upload-zone${dragOver ? ' upload-zone--over' : ''}${file ? ' upload-zone--filled' : ''}`}
