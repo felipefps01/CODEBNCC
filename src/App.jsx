@@ -43,6 +43,12 @@ function CodeCard({ item }) {
       >
         {item.code}
       </span>
+      <span
+        className="code-field-chip"
+        style={{ background: `var(${role.bg})`, color: `var(${role.fg})` }}
+      >
+        {item.field}
+      </span>
       <p className="code-card__desc">{item.description}</p>
       {item.justification && <p className="code-card__just">{item.justification}</p>}
     </li>
