@@ -18,35 +18,29 @@ function Icon({ name }) {
   );
 }
 
-const PALETAS = [
-  ['#FF512F', '#DD2476'],
-  ['#7F00FF', '#E100FF'],
-  ['#11998E', '#38EF7D'],
-  ['#FC466B', '#3F5EFB'],
-  ['#F7971E', '#FFD200'],
-  ['#00C6FF', '#0072FF'],
-  ['#F953C6', '#B91D73'],
-  ['#02AAB0', '#00CDAC'],
-  ['#DA4453', '#89216B'],
-  ['#1D976C', '#93F9B9'],
-  ['#EE0979', '#FF6A00'],
-  ['#448AFF', '#00E5FF']
+const M3_ROLES = [
+  { bg: '--md-primary', fg: '--md-on-primary' },
+  { bg: '--md-secondary', fg: '--md-on-secondary' },
+  { bg: '--md-tertiary', fg: '--md-on-tertiary' },
+  { bg: '--md-primary-container', fg: '--md-on-primary-container' },
+  { bg: '--md-secondary-container', fg: '--md-on-secondary-container' },
+  { bg: '--md-tertiary-container', fg: '--md-on-tertiary-container' }
 ];
 
-function paletteFor(code) {
+function m3RoleFor(code) {
   let hash = 0;
   for (const ch of code) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return PALETAS[hash % PALETAS.length];
+  return M3_ROLES[hash % M3_ROLES.length];
 }
 
 function CodeCard({ item }) {
-  const [from, to] = paletteFor(item.code);
+  const role = m3RoleFor(item.code);
   return (
     <li className="md3-card code-card">
       <span className="code-card__field">{item.field}</span>
       <span
         className="code-banner"
-        style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
+        style={{ background: `var(${role.bg})`, color: `var(${role.fg})` }}
       >
         {item.code}
       </span>
@@ -83,12 +77,12 @@ function HistoryDialog({ open, history, onClose, onRemove, onClear }) {
                         </span>
                         <div className="history-item__chips">
                           {entry.codes.map(c => {
-                            const [from, to] = paletteFor(c.code);
+                            const role = m3RoleFor(c.code);
                             return (
                               <span
                                 key={c.code}
                                 className="md3-chip code-chip code-chip--sm"
-                                style={{ background: `linear-gradient(135deg, ${from}, ${to})`, color: '#fff' }}
+                                style={{ background: `var(${role.bg})`, color: `var(${role.fg})` }}
                               >
                                 {c.code}
                               </span>

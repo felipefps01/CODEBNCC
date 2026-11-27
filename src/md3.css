@@ -4,8 +4,14 @@
   --md-on-primary: #ffffff;
   --md-primary-container: #cee5ff;
   --md-on-primary-container: #001d33;
+  --md-secondary: #526070;
+  --md-on-secondary: #ffffff;
   --md-secondary-container: #d8e3f8;
   --md-on-secondary-container: #101c2b;
+  --md-tertiary: #6a5378;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #f2daff;
+  --md-on-tertiary-container: #251431;
   --md-surface: #f8f9fc;
   --md-surface-container: #edf0f6;
   --md-surface-container-high: #e7eaef;
@@ -22,8 +28,14 @@
   --md-on-primary: #003352;
   --md-primary-container: #004b76;
   --md-on-primary-container: #cee5ff;
+  --md-secondary: #bcc7dc;
+  --md-on-secondary: #263141;
   --md-secondary-container: #3b4758;
   --md-on-secondary-container: #d8e3f8;
+  --md-tertiary: #d6bfe4;
+  --md-on-tertiary: #3b2948;
+  --md-tertiary-container: #523f60;
+  --md-on-tertiary-container: #f2daff;
   --md-surface: #111417;
   --md-surface-container: #1d2024;
   --md-surface-container-high: #282a2f;
@@ -330,13 +342,12 @@ body {
   align-self: flex-start;
   border-radius: 14px;
   padding: 0.45rem 1.25rem;
-  color: #ffffff;
-  font-size: clamp(1.7rem, 5.5vw, 2.4rem);
+  font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: 1px;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
-  text-shadow: 0 2px 6px color-mix(in srgb, #000 20%, transparent);
+  white-space: nowrap;
   box-shadow: 0 6px 18px color-mix(in srgb, #000 25%, transparent);
 }
 
