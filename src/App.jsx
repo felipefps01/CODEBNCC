@@ -18,15 +18,38 @@ function Icon({ name }) {
   );
 }
 
+const PALETAS = [
+  ['#FF512F', '#DD2476'],
+  ['#7F00FF', '#E100FF'],
+  ['#11998E', '#38EF7D'],
+  ['#FC466B', '#3F5EFB'],
+  ['#F7971E', '#FFD200'],
+  ['#00C6FF', '#0072FF'],
+  ['#F953C6', '#B91D73'],
+  ['#02AAB0', '#00CDAC'],
+  ['#DA4453', '#89216B'],
+  ['#1D976C', '#93F9B9'],
+  ['#EE0979', '#FF6A00'],
+  ['#448AFF', '#00E5FF']
+];
+
+function paletteFor(code) {
+  let hash = 0;
+  for (const ch of code) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return PALETAS[hash % PALETAS.length];
+}
+
 function CodeCard({ item }) {
+  const [from, to] = paletteFor(item.code);
   return (
-    <li className="md3-card code-card">
-      <div className="code-card__head">
-        <span className="md3-chip code-chip">{item.code}</span>
-        <span className="code-card__field">{item.field}</span>
-      </div>
-      <p className="code-card__desc">{item.description}</p>
-      {item.justification && <p className="code-card__just">{item.justification}</p>}
+    <li
+      className="code-banner"
+      style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
+    >
+      <span className="code-banner__field">{item.field}</span>
+      <span className="code-banner__code">{item.code}</span>
+      <p className="code-banner__desc">{item.description}</p>
+      {item.justification && <p className="code-banner__just">{item.justification}</p>}
     </li>
   );
 }
@@ -57,9 +80,18 @@ function HistoryDialog({ open, history, onClose, onRemove, onClear }) {
                           {new Date(entry.date).toLocaleString('pt-BR')}
                         </span>
                         <div className="history-item__chips">
-                          {entry.codes.map(c => (
-                            <span key={c.code} className="md3-chip code-chip code-chip--sm">{c.code}</span>
-                          ))}
+                          {entry.codes.map(c => {
+                            const [from, to] = paletteFor(c.code);
+                            return (
+                              <span
+                                key={c.code}
+                                className="md3-chip code-chip code-chip--sm"
+                                style={{ background: `linear-gradient(135deg, ${from}, ${to})`, color: '#fff' }}
+                              >
+                                {c.code}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
