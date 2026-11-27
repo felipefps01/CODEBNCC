@@ -6,7 +6,8 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 
 - **Upload de imagem da atividade** (seleção ou arrastar e soltar) e análise por IA
 - **Códigos gerados** com prefixo `EI02`, agrupados por campo de experiência, com justificativa
-- **Histórico de códigos gerados** (botão na barra superior, salvo no navegador)
+- **Histórico de códigos gerados** (botão na barra superior) — compartilhado entre todas as sessões/dispositivos: no Netlify é persistido em **Netlify Blobs** (via função `/api/history`); no Express local, em `data/history.json`; sem backend, cai para o armazenamento local do navegador
+- **Captura de foto por câmera em tela cheia** (câmera traseira por padrão, alternância frontal/traseira, obturador)
 - **Alternar claro/escuro** (botão na barra superior)
 - Interface **Material Design 3**
 
@@ -15,7 +16,7 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React 18 + Vite, CSS com tokens Material Design 3 |
-| Backend | Netlify Functions (`netlify/functions`) em produção; Express para desenvolvimento local |
+| Backend | Netlify Functions + Netlify Blobs (`netlify/functions`) em produção; Express para desenvolvimento local |
 | IA | Google Gemini — modelo `gemini-3.1-flash-lite` (lógica compartilhada em `shared/gemini.mjs`) |
 
 A chave de API (`CHAVE_API`) nunca vai para o navegador: fica em variável de ambiente no servidor Express (local) ou nas variáveis de ambiente do site no Netlify (produção).

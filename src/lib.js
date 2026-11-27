@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const HISTORY_KEY = 'codebncc:history';
+const HISTORY_KEY = 'codebncc:history:local';
 const THEME_KEY = 'codebncc:theme';
 
-export function loadHistory() {
+function loadLocal() {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -12,8 +12,12 @@ export function loadHistory() {
   }
 }
 
-export function saveHistory(items) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 50)));
+function saveLocal(items) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 50)));
+  } catch {
+    // armazenamento indisponível
+  }
 }
 
 export function useTheme() {
@@ -32,34 +36,73 @@ export function useTheme() {
 }
 
 export function useHistory() {
-  const [history, setHistory] = useState(() => loadHistory());
+  const [history, setHistory] = useState([]);
+  const modeRef = useRef('server');
 
-  const addEntry = useMemo(() => {
-    return entry => {
-      setHistory(prev => {
-        const next = [{ ...entry, id: `${Date.now()}` }, ...prev];
-        saveHistory(next);
-        return next;
+  useEffect(() => {
+    let active = true;
+    fetch('/api/history')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('http ' + r.status))))
+      .then(data => {
+        if (active) setHistory(Array.isArray(data.items) ? data.items : []);
+      })
+      .catch(() => {
+        if (active) {
+          modeRef.current = 'local';
+          setHistory(loadLocal());
+        }
       });
-    };
-  }, []);
-
-  const removeEntry = useMemo(() => {
-    return id => {
-      setHistory(prev => {
-        const next = prev.filter(item => item.id !== id);
-        saveHistory(next);
-        return next;
-      });
-    };
-  }, []);
-
-  const clearHistory = useMemo(() => {
     return () => {
-      setHistory([]);
-      saveHistory([]);
+      active = false;
     };
   }, []);
+
+  function addLocal(entry) {
+    const local = { ...entry, id: `${Date.now()}` };
+    setHistory(prev => {
+      const next = [local, ...prev];
+      saveLocal(next);
+      return next;
+    });
+  }
+
+  function addEntry(entry) {
+    if (modeRef.current === 'server') {
+      fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      })
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error('http ' + r.status))))
+        .then(saved => setHistory(prev => [saved, ...prev]))
+        .catch(() => {
+          modeRef.current = 'local';
+          addLocal(entry);
+        });
+      return;
+    }
+    addLocal(entry);
+  }
+
+  function removeEntry(id) {
+    setHistory(prev => {
+      const next = prev.filter(item => item.id !== id);
+      if (modeRef.current === 'local') saveLocal(next);
+      return next;
+    });
+    if (modeRef.current === 'server') {
+      fetch(`/api/history?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
+    }
+  }
+
+  function clearHistory() {
+    setHistory([]);
+    if (modeRef.current === 'local') {
+      saveLocal([]);
+      return;
+    }
+    fetch('/api/history', { method: 'DELETE' }).catch(() => {});
+  }
 
   return { history, addEntry, removeEntry, clearHistory };
 }

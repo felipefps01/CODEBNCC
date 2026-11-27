@@ -17,11 +17,56 @@ if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
 }
 
 app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 const API_KEY = process.env.CHAVE_API || process.env.GEMINI_API_KEY || '';
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, model: MODEL, apiKeyConfigured: Boolean(API_KEY) });
+});
+
+const historyFile = path.join(__dirname, '..', 'data', 'history.json');
+
+function readHistory() {
+  try {
+    const items = JSON.parse(fs.readFileSync(historyFile, 'utf8'));
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeHistory(items) {
+  fs.mkdirSync(path.dirname(historyFile), { recursive: true });
+  fs.writeFileSync(historyFile, JSON.stringify(items.slice(0, 200), null, 2));
+}
+
+app.get('/api/history', (_req, res) => {
+  res.json({ items: readHistory() });
+});
+
+app.post('/api/history', (req, res) => {
+  const { date, thumb, codes } = req.body || {};
+  const saved = {
+    id: crypto.randomUUID(),
+    date: String(date || new Date().toISOString()),
+    thumb: String(thumb || ''),
+    codes: Array.isArray(codes) ? codes : []
+  };
+  const items = readHistory();
+  items.unshift(saved);
+  writeHistory(items);
+  res.status(201).json(saved);
+});
+
+app.delete('/api/history', (req, res) => {
+  const id = req.query.id;
+  if (id) {
+    writeHistory(readHistory().filter(item => item.id !== id));
+  } else {
+    writeHistory([]);
+  }
+  res.json({ ok: true });
 });
 
 app.post('/api/generate', async (req, res) => {
@@ -50,7 +95,12 @@ app.post('/api/generate', async (req, res) => {
 const distDir = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distDir)) {
   app.use(express.static(distDir));
-  app.get('*', (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'Rota de API não encontrada.' });
+    }
+    return res.sendFile(path.join(distDir, 'index.html'));
+  });
 }
 
 function portFromEnvFile() {
