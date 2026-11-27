@@ -10,7 +10,8 @@ function Icon({ name }) {
     upload: 'M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z',
     close: 'M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4z',
     delete: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
-    auto: 'M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2.5A2.5 2.5 0 1 0 12 9.5a2.5 2.5 0 0 0 0 5z'
+    camera: 'M9.4 4l-1.8 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-3.6L14.6 4H9.4zM12 17.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z',
+    flip: 'M12 4V1L8 5l4 4V6a6 6 0 0 1 6 6c0 1.1-.3 2.1-.8 3l1.5 1.5A8 8 0 0 0 20 12a8 8 0 0 0-8-8zm0 14a6 6 0 0 1-6-6c0-1.1.3-2.1.8-3L5.3 7.5A8 8 0 0 0 4 12a8 8 0 0 0 8 8v3l4-4-4-4v3z'
   };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -31,6 +32,89 @@ const DEFAULT_ROLE = { bg: '--md-banner-slate', fg: '--md-banner-on-slate' };
 
 function roleFor(code) {
   return PREFIX_ROLES[code.slice(4, 6)] || DEFAULT_ROLE;
+}
+
+function CameraView({ open, onClose, onCapture }) {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const [facing, setFacing] = useState('environment');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return undefined;
+    let cancelled = false;
+    setError('');
+    navigator.mediaDevices
+      ?.getUserMedia({
+        video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      })
+      .then(stream => {
+        if (cancelled) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      })
+      .catch(() => {
+        setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
+      });
+
+    return () => {
+      cancelled = true;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    };
+  }, [open, facing]);
+
+  if (!open) return null;
+
+  function shoot() {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (facing === 'user') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      onCapture(new File([blob], `captura-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+    }, 'image/jpeg', 0.92);
+  }
+
+  return (
+    <div className="camera">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className={`camera__video${facing === 'user' ? ' camera__video--mirror' : ''}`}
+      />
+      {error && <p className="camera__msg" role="alert">{error}</p>}
+      <button className="md3-icon-btn camera__close" onClick={onClose} aria-label="Fechar câmera">
+        <Icon name="close" />
+      </button>
+      {!error && (
+        <button
+          className="md3-icon-btn camera__flip"
+          onClick={() => setFacing(f => (f === 'environment' ? 'user' : 'environment'))}
+          aria-label="Alternar câmera"
+        >
+          <Icon name="flip" />
+        </button>
+      )}
+      {!error && (
+        <button className="camera__shutter" onClick={shoot} aria-label="Capturar foto" />
+      )}
+    </div>
+  );
 }
 
 function CodeCard({ item }) {
@@ -131,6 +215,7 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const inputRef = useRef(null);
 
   function pickImage(f) {
@@ -191,6 +276,11 @@ export default function App() {
     }
   }
 
+  function onCaptured(file) {
+    setCameraOpen(false);
+    pickImage(file);
+  }
+
   return (
     <div className="app">
       <header className="md3-topbar">
@@ -247,6 +337,9 @@ export default function App() {
               {file.name} <span>(clique para trocar)</span>
             </p>
           )}
+          <button className="md3-btn md3-btn--tonal md3-btn--lg" onClick={() => setCameraOpen(true)}>
+            Capturar com a câmera
+          </button>
           <button className="md3-btn md3-btn--filled md3-btn--lg" onClick={generate} disabled={loading}>
             {loading ? <span className="md3-spinner" aria-label="Analisando" /> : null}
             {loading ? 'Analisando com IA…' : 'Gerar códigos BNCC (EI02)'}
@@ -274,6 +367,8 @@ export default function App() {
         onRemove={removeEntry}
         onClear={clearHistory}
       />
+
+      <CameraView open={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={onCaptured} />
     </div>
   );
 }
