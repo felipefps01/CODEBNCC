@@ -34,6 +34,8 @@
   --md-error: #ba1a1a;
   --md-shadow: rgba(0, 0, 0, 0.2);
   --md-logo-deep: #003f66;
+  --md-camera: #e8123f;
+  --md-camera-fg: #ffffff;
 }
 
 [data-theme='dark'] {
@@ -71,6 +73,8 @@
   --md-error: #ffb4ab;
   --md-shadow: rgba(0, 0, 0, 0.6);
   --md-logo-deep: #004b76;
+  --md-camera: #ff5c74;
+  --md-camera-fg: #3b000c;
 }
 
 * {
@@ -225,6 +229,16 @@ body {
 .md3-btn--tonal:hover:not(:disabled) {
   filter: brightness(1.05);
   box-shadow: 0 2px 8px var(--md-shadow);
+}
+
+.md3-btn--camera {
+  background: var(--md-camera);
+  color: var(--md-camera-fg);
+}
+
+.md3-btn--camera:hover:not(:disabled) {
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--md-camera) 45%, transparent);
+  filter: brightness(1.07);
 }
 
 .md3-btn--lg {

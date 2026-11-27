@@ -337,7 +337,7 @@ export default function App() {
               {file.name} <span>(clique para trocar)</span>
             </p>
           )}
-          <button className="md3-btn md3-btn--tonal md3-btn--lg" onClick={() => setCameraOpen(true)}>
+          <button className="md3-btn md3-btn--camera md3-btn--lg" onClick={() => setCameraOpen(true)}>
             Capturar com a câmera
           </button>
           <button className="md3-btn md3-btn--filled md3-btn--lg" onClick={generate} disabled={loading}>
