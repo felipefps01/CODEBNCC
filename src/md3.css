@@ -12,6 +12,18 @@
   --md-on-tertiary: #ffffff;
   --md-tertiary-container: #f2daff;
   --md-on-tertiary-container: #251431;
+  --md-banner-blue: #00639b;
+  --md-banner-on-blue: #ffffff;
+  --md-banner-slate: #526070;
+  --md-banner-on-slate: #ffffff;
+  --md-banner-purple: #6a5378;
+  --md-banner-on-purple: #ffffff;
+  --md-banner-red: #ba1a1a;
+  --md-banner-on-red: #ffffff;
+  --md-banner-teal: #00696d;
+  --md-banner-on-teal: #ffffff;
+  --md-banner-brown: #7d5700;
+  --md-banner-on-brown: #ffffff;
   --md-surface: #f8f9fc;
   --md-surface-container: #edf0f6;
   --md-surface-container-high: #e7eaef;
@@ -36,6 +48,18 @@
   --md-on-tertiary: #3b2948;
   --md-tertiary-container: #523f60;
   --md-on-tertiary-container: #f2daff;
+  --md-banner-blue: #98cbf9;
+  --md-banner-on-blue: #003352;
+  --md-banner-slate: #bcc7dc;
+  --md-banner-on-slate: #263141;
+  --md-banner-purple: #d6bfe4;
+  --md-banner-on-purple: #3b2948;
+  --md-banner-red: #ffb4ab;
+  --md-banner-on-red: #690005;
+  --md-banner-teal: #80d4d7;
+  --md-banner-on-teal: #003736;
+  --md-banner-brown: #ffb955;
+  --md-banner-on-brown: #452b00;
   --md-surface: #111417;
   --md-surface-container: #1d2024;
   --md-surface-container-high: #282a2f;
@@ -357,7 +381,7 @@ body {
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--md-on-surface-variant);
-  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .code-card__desc {

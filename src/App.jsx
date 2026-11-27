@@ -18,32 +18,32 @@ function Icon({ name }) {
   );
 }
 
-const M3_ROLES = [
-  { bg: '--md-primary', fg: '--md-on-primary' },
-  { bg: '--md-secondary', fg: '--md-on-secondary' },
-  { bg: '--md-tertiary', fg: '--md-on-tertiary' },
-  { bg: '--md-primary-container', fg: '--md-on-primary-container' },
-  { bg: '--md-secondary-container', fg: '--md-on-secondary-container' },
-  { bg: '--md-tertiary-container', fg: '--md-on-tertiary-container' }
+const BANNER_ROLES = [
+  { bg: '--md-banner-blue', fg: '--md-banner-on-blue' },
+  { bg: '--md-banner-slate', fg: '--md-banner-on-slate' },
+  { bg: '--md-banner-purple', fg: '--md-banner-on-purple' },
+  { bg: '--md-banner-red', fg: '--md-banner-on-red' },
+  { bg: '--md-banner-teal', fg: '--md-banner-on-teal' },
+  { bg: '--md-banner-brown', fg: '--md-banner-on-brown' }
 ];
 
 function m3RoleFor(code) {
   let hash = 0;
   for (const ch of code) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return M3_ROLES[hash % M3_ROLES.length];
+  return BANNER_ROLES[hash % BANNER_ROLES.length];
 }
 
 function CodeCard({ item }) {
   const role = m3RoleFor(item.code);
   return (
     <li className="md3-card code-card">
-      <span className="code-card__field">{item.field}</span>
       <span
         className="code-banner"
         style={{ background: `var(${role.bg})`, color: `var(${role.fg})` }}
       >
         {item.code}
       </span>
+      <span className="code-card__field">{item.field}</span>
       <p className="code-card__desc">{item.description}</p>
       {item.justification && <p className="code-card__just">{item.justification}</p>}
     </li>
