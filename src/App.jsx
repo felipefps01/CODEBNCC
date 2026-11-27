@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme, useHistory, makeThumb } from './lib.js';
 
 function Icon({ name }) {
@@ -98,7 +98,23 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [backend, setBackend] = useState({ checked: false, ok: false, apiKeyConfigured: false });
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/health')
+      .then(r => (r.ok ? r.json() : { ok: false }))
+      .then(data => {
+        if (active) setBackend({ checked: true, ok: Boolean(data.ok), apiKeyConfigured: Boolean(data.apiKeyConfigured) });
+      })
+      .catch(() => {
+        if (active) setBackend({ checked: true, ok: false, apiKeyConfigured: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function pickImage(f) {
     if (!f || !f.type.startsWith('image/')) {
@@ -138,15 +154,25 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64, mimeType: file.type })
       });
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        setError(`O servidor respondeu com HTTP ${response.status}, mas sem JSON válido.`);
+        return;
+      }
       if (!response.ok) {
-        setError(data.error || 'Não foi possível gerar os códigos.');
+        setError(data.error || `Não foi possível gerar os códigos (HTTP ${response.status}).`);
         return;
       }
       setResult(data);
       addEntry({ date: new Date().toISOString(), codes: data.codes, thumb });
-    } catch {
-      setError('Erro de conexão com o servidor. Verifique se o backend está em execução.');
+    } catch (err) {
+      setError(
+        'Não foi possível conectar ao backend (/api). Inicie o servidor com "npm run dev" ' +
+        '(ou "npm start" após "npm run build"). Detalhe: ' +
+        (err?.message || 'erro de rede')
+      );
     } finally {
       setLoading(false);
     }
@@ -175,6 +201,17 @@ export default function App() {
       </header>
 
       <main className="container">
+        {backend.checked && !backend.ok && (
+          <div className="md3-banner" role="alert">
+            Backend offline — o frontend não alcança /api. Execute <code>npm run dev</code> (backend :3001 + web :5173)
+            ou <code>npm start</code> para servir tudo na mesma porta.
+          </div>
+        )}
+        {backend.checked && backend.ok && !backend.apiKeyConfigured && (
+          <div className="md3-banner md3-banner--warn" role="alert">
+            CHAVE_API não configurada no servidor — crie o arquivo .env a partir de .env.example e reinicie o backend.
+          </div>
+        )}
         <section className="md3-card upload-card">
           <div
             className={`upload-zone${dragOver ? ' upload-zone--over' : ''}${file ? ' upload-zone--filled' : ''}`}

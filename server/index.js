@@ -6,6 +6,15 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(envPath);
+  } catch (err) {
+    console.warn('Não foi possível carregar o .env:', err.message);
+  }
+}
+
 app.use(express.json({ limit: '15mb' }));
 
 const API_KEY = process.env.CHAVE_API || process.env.GEMINI_API_KEY || '';
@@ -98,6 +107,10 @@ function buildResponseSchema() {
     required: ['codes']
   };
 }
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, model: MODEL, apiKeyConfigured: Boolean(API_KEY) });
+});
 
 app.post('/api/generate', async (req, res) => {
   if (!API_KEY) {
@@ -224,9 +237,25 @@ if (fs.existsSync(distDir)) {
   app.get('*', (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
 }
 
-const PORT = process.env.PORT || 3001;
+function portFromEnvFile() {
+  try {
+    const match = fs.readFileSync(envPath, 'utf8').match(/^PORT=(\d+)\s*$/m);
+    return match ? Number(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+const PORT = portFromEnvFile() ?? (Number(process.env.PORT) || 3001);
 app.listen(PORT, () => {
   console.log(`Servidor CODEBNCC rodando em http://localhost:${PORT}`);
   console.log(`Modelo de IA: ${MODEL}`);
   console.log(`Chave de API (CHAVE_API): ${API_KEY ? 'configurada' : 'NÃO configurada'}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`A porta ${PORT} já está em uso. Encerre o processo que a ocupa ou defina PORT no .env.`);
+  } else {
+    console.error('Falha ao iniciar o servidor:', err.message);
+  }
+  process.exit(1);
 });

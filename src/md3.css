@@ -352,6 +352,30 @@ body {
   line-height: 1.45;
 }
 
+/* ---------- Banner ---------- */
+.md3-banner {
+  background: var(--md-error);
+  color: var(--md-surface);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+.md3-banner--warn {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.md3-banner code {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--md-surface) 25%, transparent);
+}
+
 /* ---------- Error ---------- */
 .md3-error {
   margin: 0;

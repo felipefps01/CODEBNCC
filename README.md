@@ -52,6 +52,14 @@ Aplicativo que gera códigos de habilidades da **BNCC** (prefixo **EI02**, grupo
 
    O Express serve o build do Vite (`dist/`) e a API na porta `3001` (configurável em `PORT`).
 
+## Solução de problemas
+
+- **"Erro de conexão com o servidor" / banner "Backend offline"** — o frontend não alcança `/api`. Em desenvolvimento, rode sempre com `npm run dev` (sobe backend e frontend juntos; o Vite repassa `/api` para o backend). Em produção, use `npm start`, que serve o build e a API na mesma porta.
+- **Porta do backend ocupada** — a porta padrão é `3001`. Se ela já estiver em uso, defina `PORT=outra-porta` no `.env` (o proxy do Vite lê o mesmo valor, então tudo continua funcionando).
+- **Banner "CHAVE_API não configurada"** — o arquivo `.env` não existe ou está sem a chave. Copie `.env.example` para `.env`, preencha `CHAVE_API` e reinicie o backend (o servidor carrega o `.env` automaticamente ao iniciar).
+- **HTTP 403** — a chave não tem permissão para o modelo `gemini-3.1-flash-lite`; gere uma nova chave no [Google AI Studio](https://aistudio.google.com/apikey).
+- **HTTP 429** — limite de requisições atingido; aguarde e tente novamente.
+
 ## Uso
 
 1. Envie a imagem da atividade no cartão de upload.
